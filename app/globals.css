@@ -7,6 +7,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
+    --background-alt: #222222;
     --foreground: #ededed;
   }
 }
@@ -70,8 +71,9 @@ tr.row-doc > td {
   padding-block: 1rem;
 }
 
-table#doc-list tr.row-doc td :is(ul, li) {
-  list-style: none
+.list-style-none,
+.list-style-none li {
+  list-style: none;
 }
 
 ul.tags {
@@ -86,11 +88,21 @@ ul.tags {
     display: inline-block;
     list-style: none;
     line-height: 1;
-    padding: 0.25rem 0.5rem;
+    padding: 0.25rem 0.5rem 0.25rem 0.5rem;
     border-radius: 0.25rem;
     font-size: 0.875rem;
     color: var(--foreground);
     transition: background-color 0.2s ease-in-out;
+    &:not(.more-tags) {
+      clip-path: polygon(
+        6px 0%,
+        100% 0%,
+        100% 100%,
+        6px 100%,
+        0% calc(100% - 6px),
+        0% 6px
+      );
+    }
     &:hover {
       background-color: #ffffff88;
     }
@@ -133,5 +145,16 @@ footer#footer {
       opacity: 1;
       transform: translateX(-50%) translateY(-10px);
     }
+  }
+}
+
+.MuiPaper-root {
+  background-color: var(--background-alt) !important;
+  color: var(--foreground) !important;
+  ul > li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4rem;
   }
 }
