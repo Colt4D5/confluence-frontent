@@ -1,9 +1,9 @@
 import DocListItem from "./DocListItem";
 
-export default function DocList({ results, limit }) {
+export default function DocList({ results, isLoading }) {
 
   return (
-    <table id="doc-list">
+    <table id="doc-list" className={`${isLoading ? "loading" : ""}`}>
       <thead>
         <tr>
           <th width="4%"></th>

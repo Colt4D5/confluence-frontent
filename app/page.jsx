@@ -1,10 +1,12 @@
 'use client'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DocList from "@/components/DocList";
 import { useSearchParams } from 'next/navigation';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [lastSearchQuery, setLastSearchQuery] = useState("");
+  const [limit, setLimit] = useState(10);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -14,7 +16,12 @@ export default function Home() {
   const [totalPages, setTotalPages] = useState(0);
 
   const searchParams = useSearchParams();
-  const limit = searchParams.get('limit') || 10;
+
+  useEffect(() => {
+    if (searchParams.get('limit')) {
+      setLimit(parseInt(searchParams.get('limit')));
+    }
+  }, [searchParams])
 
   const fetchUrl = `${process.env.NEXT_PUBLIC_API_DOMAIN_ROOT}/${process.env.NEXT_PUBLIC_API_VERSION}/search`;
 
@@ -29,6 +36,7 @@ export default function Home() {
       }
       setCurrentPage(page);
       setTotalPages(Math.ceil(data?.data?.totalSize / limit));
+      setLastSearchQuery(searchQuery);
       updateResults(data);
     } catch (error) {
       console.error("Error fetching search results:", error);
@@ -59,24 +67,76 @@ export default function Home() {
     setError(null);
   }
 
+  // function updatePaginatedResults(event) {
+  //   if (searchQuery.trim() !== "") {
+  //     handleSearch(fetchUrl, 1);
+  //   } else {
+  //     handleSubmit(event);
+  //   }
+  // }
+
+  useEffect(() => {
+    if (searchQuery.trim() !== "") {
+      handleSearch(fetchUrl, 1);
+    } else if (searchQuery.trim() === "") {
+      setResults([]);
+      setNextLink(null);
+      setPreviousLink(null);
+      setCurrentPage(1);
+      setTotalPages(0);
+      setLastSearchQuery("");
+      setError(null);
+    }
+  }, [limit]);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (searchQuery.trim() === "") {
+      alert("Please enter a search query.");
+      return;
+    }
+    handleSearch(fetchUrl, 1);
+  }
+
   return (
     <main className="container">
       <h1>Search Confluence Docs</h1>
       <div style={{ marginBottom: "20px" }}>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search for docs..."
-        />
-        <button onClick={() => handleSearch(fetchUrl, 1)}>Search</button>
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search for docs..."
+              style={{ padding: "8px", fontSize: "16px" }}
+              />
+            <button style={{ width: 'auto' }} type="submit">Search</button>
+          </div>
+          <div>
+            <label htmlFor="limit">Results per page:</label>
+            <select
+              id="limit"
+              value={limit}
+              onChange={(e) => {
+                setLimit(parseInt(e.target.value));
+                // updatePaginatedResults(e);
+              }}
+            >
+              {[5, 10, 25, 50, 100].map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </div>
+        </form>
       </div>
-      {loading && !error && <p>Loading...</p>}
       {error && <p>Error: {error.message}</p>}
-      {results.length === 0 && !loading && !error && <p>No results found. Try searching for something else.</p>}
+      {results.length === 0 && !error && <p>No results found. Try searching for something else.</p>}
       {results.length > 0 && (
         <>
-          <DocList results={results} limit={limit} />
+          <DocList isLoading={loading} results={results} />
           <div className="pagination">
             {(nextLink || previousLink) && (
               <button onClick={() => handlePageChange(previousLink, currentPage - 1)} disabled={!previousLink}>Previous</button>

@@ -67,6 +67,41 @@ header {
   }
 }
 
+table.loading {
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity 0.3s ease-in-out;
+  position: relative;
+}
+
+table.loading::after {
+  content: '';
+  position: absolute;
+  top: 4rem;
+  left: 50%;
+  transform: translate3d(-50%, 0, 0);
+  width: 5rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border-color: transparent;
+  border-left-color: #ffffffee;
+  border-bottom-color: #ffffffaa;
+  border-right-color: #ffffff55;
+  border-top-color: #ffffff22;
+  border-style: solid;
+  border-width: 0.5rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: translate3d(-50%, 0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0) rotate(360deg);
+  }
+}
+
 tr.row-doc > td {
   padding-block: 1rem;
 }
